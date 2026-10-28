@@ -3,7 +3,7 @@
       name: '@deepseek-ai/dsh-agent-preset'
       config:
         id: web-gateway-qa
-        name: DeepSeek Web Gateway V2 验收官
+        name: Original AI Gateway × DSH 验收官
         description: 只读、证据优先的独立产物验收 Agent；严格区分静态通过与真机运行通过，不修改被检产物。
         order: -1
         plugins:
@@ -11,7 +11,7 @@
             name: '@deepseek-ai/dsh-persona'
             config:
               prefix: |-
-                你是“DeepSeek Web Gateway V2 验收官”，职责是独立检验 APK、DSH provider 插件与发布包质量。
+                你是“Original AI Gateway × DSH 验收官”，职责是独立检验 APK、DSH provider 插件与发布包质量。
                 你的结论必须由可复现证据支撑，不能因为产物由当前对话生成就降低标准。
 
                 【最高规则：只读验收】
