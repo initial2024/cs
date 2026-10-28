@@ -32,11 +32,14 @@
                 B. DEX 三条 chat timeout 必须都是 600 秒；HTTP request body cap 必须是 32 MiB。
                 C. bridge.js 必须通过语法检查，并具有：5000ms DeepSeek generation grace、V2 attachment envelope、File/DataTransfer 真附件注入、上传失败 fail-closed、conversation-limit 检测、自动 fresh-chat、一次性 rollover 防循环、AUTO_ROLLOVER_FAILED 显式失败。
                 D. 普通发送只能上传“当前用户消息”的附件；历史附件只能缓存/随 envelope 携带，自动换新对话时才能用于上下文重建，禁止每轮重复上传全部历史附件。
-                E. provider 插件必须使用自定义 LlmAdapter，不得修改冻结 GenerateOptions；图片通过 attachment service 读取；文件仅从 DSH 已投影的 attachment handle 路径读取；16 MiB 单文件、20 MiB 总原始附件上限；endpoint 默认 127.0.0.1:1601。
+                E. provider 插件必须使用自定义 LlmAdapter，不得修改冻结 GenerateOptions；图片通过 attachment service 读取；文件仅从 DSH 已投影的 attachment handle 路径读取；16 MiB 单文件、20 MiB 总原始附件上限；连接必须优先自动发现 127.0.0.1:1601，并在其不可达时回退 127.0.0.1:8787。
                 F. SSE 输出必须遵守 DSH StreamChunk：reasoning/text/tool-call block-start/delta/block-end，usage 在 finish 前；tool arguments 保持原始 JSON 字符串。
                 G. 伪工具调用兼容必须 fail-closed：仅当前可见工具名、唯一 call id、参数必须是 JSON object；普通正文、伪造“工具返回”、已有 native tool-call 不得被误执行。
                 H. 扫描硬编码 secret/token/cookie；读取 localStorage userToken 这种“运行时读取”不是硬编码凭据，但固定 Bearer/sk/token 值属于 FAIL。
                 I. APK 签名：若能运行 jarsigner/apksigner则验证；测试自签名必须明确标注“不能无损覆盖原签名安装”。只有原证书签名才允许声称可继承原 App 私有数据。
+                J. 原 AI Gateway 核心必须作为冻结基线：不得用新的 WebView/DOM 自动化重写原 GeckoView、登录、输入、发送、上传、悬浮窗算法；增强应位于 DSH provider/compat 层或最小 bridge hook。
+                K. DSH provider 必须暴露并保持原模型 id：deepseek-chat、chatgpt-web、grok-web-fast、glm-web-flash。
+                L. 自动续接只能由明确的 provider 对话/上下文上限证据触发。长思考、暂时没有 token、普通网络抖动、generic abort 均不得触发 fresh chat。
 
                 【运行验收，必须逐项留下观察证据】
                 1. 纯文本短回答。
@@ -47,10 +50,10 @@
                 6. 故意上传不支持/超限文件：必须明确失败，不能退化成“只发文字”。
                 7. 同一文件在后续新消息再次附加时能再次上传；历史附件不能每轮重复出现。
                 8. 工具调用：DeepSeek 网页输出严格协议后，DSH 必须出现真正 tool-call 并执行；伪造工具结果不得执行。
-                9. 对话达到 DeepSeek 上限：自动新建对话，只重试一次，完整 DSH system/developer/user/assistant/tool 上下文被重放；当前任务继续，不能把上限提示当最终答案。
+                9. 对话达到 provider 明确上限：自动新建对话并继续；不得因普通静默、长思考或连接抖动误切会话。交接必须保留当前未完成任务、系统/开发约束、最近关键历史与工具状态，并避免无限重复历史附件。
                 10. 自动 rollover 失败时出现 AUTO_ROLLOVER_FAILED，不能死循环或静默换成错误答案。
                 11. 手动 fresh chat 后附件去重状态清空。
-                12. DSH 客户端主动断开时请求终止，不遗留无限后台网页生成。
+                12. 生成保护：普通 client_disconnected、UI 切换、短暂断流不得立即截停正在进行的网页回答；provider 应有界后台 drain 直到本轮结束或硬超时。只有有明确证据的用户主动停止/取消才允许立即终止。
 
                 【判定等级】
                 - FAIL：任一必检静态项失败；签名/DEX损坏；JS语法错误；附件失败后仍发送正文；rollover无限重试；工具越权执行。
