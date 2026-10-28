@@ -1,7 +1,7 @@
 {
   "name": "dsh-preset-web-gateway-qa",
-  "version": "1.0.0",
-  "description": "Independent read-only DSH preset for auditing DeepSeek Web Gateway V2 release artifacts.",
+  "version": "1.1.0",
+  "description": "Independent read-only QA preset for original AI Gateway + updated DSH integration, transport continuity, tools and attachments.",
   "keywords": ["dsh", "dsh-bundle", "agent-preset", "qa", "audit", "dshapp-plugin"],
   "license": "MIT",
   "files": ["cordis.patch.yml", "README.md"],
